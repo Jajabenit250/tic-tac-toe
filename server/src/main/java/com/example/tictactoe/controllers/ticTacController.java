@@ -1,25 +1,20 @@
 package com.example.tictactoe.controllers;
-
-import com.example.tictactoe.exceptions.InvalidBoardException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 
-    static class Move
-{
-    int row, col;
-};
+
 
 @RestController
 public class ticTacController {
 
-
+    class Move {
+        int row, col;
+    }
 
     @GetMapping("/main")
     public ResponseEntity<Object> getStudentList(@RequestParam String board) {
@@ -42,6 +37,26 @@ public class ticTacController {
         }
         String resWinner = checkWinner(List.of(boardMoves));
 
+        if (resWinner == "Player" || resWinner == "Computer" ) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Board Provided a winner: " + resWinner);
+        } else if (resWinner == "Draw" ) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Looks Like Board Provided has a: " + resWinner);
+        } 
+
+        String sugestedMove[][]  = {{boardMoves[0],boardMoves[1], boardMoves[2] }, {boardMoves[0],boardMoves[1], boardMoves[2] }, {boardMoves[0],boardMoves[1], boardMoves[2] }};
+         char boardX[][] = {{ ' ', 'X', 'X' },
+                      { 'O', ' ', ' ' },
+                      { 'O', ' ', ' ' }};
+ 
+    Move bestMove = findBestMove(boardX);
+ 
+    System.out.printf("The Optimal Move is :\n");
+    System.out.printf("ROW: %d COL: %d\n\n",
+               bestMove.row, bestMove.col );
         System.out.println(resWinner);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -78,132 +93,164 @@ public class ticTacController {
                     break;
             }
             if (line.equals("XXX")) {
-                return "Player is already a Winner";
+                return "Player";
             } else if (line.equals("OOO")) {
-                return "Computer is already a Winner";
+                return "Computer";
             }
         }
 
-        if(board.stream().filter(Objects::nonNull).collect(Collectors.toList()).size() == 8) {
-            return "draw";
+        if (board.stream().filter(remainingMove -> " ".equals(remainingMove)).count() <= 1) {
+            return "Draw";
         }
 
         return null;
     }
 
-//    public String nextMove (List<String> board) {
-//
-//    }
+    static Boolean isMovesLeft(char board[][])
+{
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+            if (board[i][j] == '_')
+                return true;
+    return false;
+}
+ 
+    static int evaluate(char b[][])
+    {
+    for (int row = 0; row < 3; row++)
+    {
+        if (b[row][0] == b[row][1] &&
+            b[row][1] == b[row][2])
+        {
+            if (b[row][0] == 'X')
+                return +10;
+            else if (b[row][0] == 'O')
+                return -10;
+        }
+    }
+
+    for (int col = 0; col < 3; col++)
+    {
+        if (b[0][col] == b[1][col] &&
+            b[1][col] == b[2][col])
+        {
+            if (b[0][col] == 'X')
+                return +10;
+ 
+            else if (b[0][col] == 'O')
+                return -10;
+        }
+    }
+    if (b[0][0] == b[1][1] && b[1][1] == b[2][2])
+    {
+        if (b[0][0] == 'X')
+            return +10;
+        else if (b[0][0] == 'O')
+            return -10;
+    }
+ 
+    if (b[0][2] == b[1][1] && b[1][1] == b[2][0])
+    {
+        if (b[0][2] == 'X')
+            return +10;
+        else if (b[0][2] == 'O')
+            return -10;
+    }
+
+    return 0;
+}
+
+    public int maxValue(char board[][],
+                       int depth, Boolean isMax)
+    {
+        int score = evaluate(board);
+ 
+    // If Maximizer has won the game
+    // return his/her evaluated score
+    if (score == 10)
+        return score;
+ 
+    // If Minimizer has won the game
+    // return his/her evaluated score
+    if (score == -10)
+        return score;
+ 
+    // If there are no more moves and
+    // no winner then it is a tie
+    if (isMovesLeft(board) == false)
+        return 0;
+        if (isMax)
+        {
+            int best = -1000;
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    if (board[i][j]==' ')
+                    {
+                        board[i][j] = 'X';
+                        best = Math.max(best, maxValue(board,
+                                depth + 1, !isMax));
+                        board[i][j] = ' ';
+                    }
+                }
+            }
+            return best;
+        }
+        else
+        {
+            int best = 1000;
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    if (board[i][j] == ' ')
+                    {
+                        board[i][j] = 'O';
+                        best = Math.min(best, maxValue(board,
+                                depth + 1, !isMax));
+                        board[i][j] = ' ';
+                    }
+                }
+            }
+            return best;
+        }
+    }
+    public Move findBestMove(char board[][])
+    {
+        int bestVal = -1000;
+        Move bestMove = new Move();
+        bestMove.row = -1;
+        bestMove.col = -1;
+
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                if (board[i][j] == ' ')
+                {
+                    board[i][j] = 'X';
+                    int moveVal = maxValue(board, 0, false);
+
+                    board[i][j] = ' ';
+                    if (moveVal > bestVal)
+                    {
+                        bestMove.row = i;
+                        bestMove.col = j;
+                        bestVal = moveVal;
+                    }
+                }
+            }
+        }
+
+        System.out.printf("The value of the best Move " +
+                "is : %d\n\n", bestVal);
+
+        return bestMove;
+    }
+
 }
 
 
-// static int minimax(char board[][],
-//                     int depth, Boolean isMax)
-// {
-//     // If this maximizer's move
-//     if (isMax)
-//     {
-//         int best = -1000;
- 
-//         // Traverse all cells
-//         for (int i = 0; i < 3; i++)
-//         {
-//             for (int j = 0; j < 3; j++)
-//             {
-//                 // Check if cell is empty
-//                 if (board[i][j]=='_')
-//                 {
-//                     // Make the move
-//                     board[i][j] = player;
- 
-//                     // Call minimax recursively and choose
-//                     // the maximum value
-//                     best = Math.max(best, minimax(board,
-//                                     depth + 1, !isMax));
- 
-//                     // Undo the move
-//                     board[i][j] = '_';
-//                 }
-//             }
-//         }
-//         return best;
-//     }
- 
-//     // If this minimizer's move
-//     else
-//     {
-//         int best = 1000;
- 
-//         // Traverse all cells
-//         for (int i = 0; i < 3; i++)
-//         {
-//             for (int j = 0; j < 3; j++)
-//             {
-//                 // Check if cell is empty
-//                 if (board[i][j] == '_')
-//                 {
-//                     // Make the move
-//                     board[i][j] = opponent;
- 
-//                     // Call minimax recursively and choose
-//                     // the minimum value
-//                     best = Math.min(best, minimax(board,
-//                                     depth + 1, !isMax));
- 
-//                     // Undo the move
-//                     board[i][j] = '_';
-//                 }
-//             }
-//         }
-//         return best;
-//     }
-// }
- 
-// // This will return the best possible
-// // move for the player
-// static Move findBestMove(char board[][])
-// {
-//     int bestVal = -1000;
-//     Move bestMove = new Move();
-//     bestMove.row = -1;
-//     bestMove.col = -1;
- 
-//     // Traverse all cells, evaluate minimax function
-//     // for all empty cells. And return the cell
-//     // with optimal value.
-//     for (int i = 0; i < 3; i++)
-//     {
-//         for (int j = 0; j < 3; j++)
-//         {
-//             // Check if cell is empty
-//             if (board[i][j] == '_')
-//             {
-//                 // Make the move
-//                 board[i][j] = player;
- 
-//                 // compute evaluation function for this
-//                 // move.
-//                 int moveVal = minimax(board, 0, false);
- 
-//                 // Undo the move
-//                 board[i][j] = '_';
- 
-//                 // If the value of the current move is
-//                 // more than the best value, then update
-//                 // best/
-//                 if (moveVal > bestVal)
-//                 {
-//                     bestMove.row = i;
-//                     bestMove.col = j;
-//                     bestVal = moveVal;
-//                 }
-//             }
-//         }
-//     }
- 
-//     System.out.printf("The value of the best Move " +
-//                              "is : %d\n\n", bestVal);
- 
-//     return bestMove;
-// }
+
  
