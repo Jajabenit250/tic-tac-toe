@@ -16,7 +16,7 @@ public class ticTacController {
         int row, col;
     }
 
-    @GetMapping("/main")
+    @GetMapping("/")
     public ResponseEntity<Object> main(@RequestParam String board) {
         String[] boardMoves = {" ", " ", " ", " ", " ", " ", " ", " ", " "};
         List<String> movesLst = Arrays.asList(board.toUpperCase().split(""));
