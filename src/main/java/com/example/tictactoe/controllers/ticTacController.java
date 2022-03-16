@@ -4,9 +4,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Arrays;
 import java.util.List;
-
-
 
 
 @RestController
@@ -17,9 +17,9 @@ public class ticTacController {
     }
 
     @GetMapping("/main")
-    public ResponseEntity<Object> getStudentList(@RequestParam String board) {
+    public ResponseEntity<Object> main(@RequestParam String board) {
         String[] boardMoves = {" ", " ", " ", " ", " ", " ", " ", " ", " "};
-        List<String> movesLst = List.of(board.toUpperCase().split(""));
+        List<String> movesLst = Arrays.asList(board.toUpperCase().split(""));
         if (movesLst.size() > 9) {
 
             return ResponseEntity
@@ -35,7 +35,7 @@ public class ticTacController {
             }
             boardMoves[i] = movesLst.get(i);
         }
-        String resWinner = checkWinner(List.of(boardMoves));
+        String resWinner = checkWinner(Arrays.asList((boardMoves)));
 
         if (resWinner == "Player" || resWinner == "Computer" ) {
             return ResponseEntity
