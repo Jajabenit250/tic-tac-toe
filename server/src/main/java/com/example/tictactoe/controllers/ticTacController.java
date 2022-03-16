@@ -48,8 +48,8 @@ public class ticTacController {
         } 
 
         char sugestedMove[][]  = {{boardMoves[0].charAt(0),boardMoves[1].charAt(0), boardMoves[2].charAt(0) },
-                {boardMoves[0].charAt(0),boardMoves[1].charAt(0), boardMoves[2].charAt(0) },
-                {boardMoves[0].charAt(0),boardMoves[1].charAt(0), boardMoves[2].charAt(0) }};
+                {boardMoves[3].charAt(0),boardMoves[4].charAt(0), boardMoves[5].charAt(0) },
+                {boardMoves[6].charAt(0),boardMoves[7].charAt(0), boardMoves[8].charAt(0) }};
  
     Move bestMove = findBestMove(sugestedMove);
 
@@ -112,7 +112,7 @@ public class ticTacController {
     {
         for (int i = 0; i < 3; i++)
             for (int j = 0; j < 3; j++)
-                if (board[i][j] == '_')
+                if (board[i][j] == ' ')
                     return true;
         return false;
     }
