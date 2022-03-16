@@ -47,20 +47,22 @@ public class ticTacController {
                     .body("Looks Like Board Provided has a: " + resWinner);
         } 
 
-        String sugestedMove[][]  = {{boardMoves[0],boardMoves[1], boardMoves[2] }, {boardMoves[0],boardMoves[1], boardMoves[2] }, {boardMoves[0],boardMoves[1], boardMoves[2] }};
-         char boardX[][] = {{ ' ', 'X', 'X' },
-                      { 'O', ' ', ' ' },
-                      { 'O', ' ', ' ' }};
+        char sugestedMove[][]  = {{boardMoves[0].charAt(0),boardMoves[1].charAt(0), boardMoves[2].charAt(0) },
+                {boardMoves[0].charAt(0),boardMoves[1].charAt(0), boardMoves[2].charAt(0) },
+                {boardMoves[0].charAt(0),boardMoves[1].charAt(0), boardMoves[2].charAt(0) }};
  
-    Move bestMove = findBestMove(boardX);
- 
-    System.out.printf("The Optimal Move is :\n");
-    System.out.printf("ROW: %d COL: %d\n\n",
-               bestMove.row, bestMove.col );
-        System.out.println(resWinner);
+    Move bestMove = findBestMove(sugestedMove);
+
+    sugestedMove [bestMove.row][bestMove.col] = 'O';
+        String finalPlay = "";
+        for (int i=0; i < sugestedMove.length; i++) {
+            for (int j=0; j < sugestedMove[i].length; j++) {
+                finalPlay += sugestedMove[i][j];
+            }
+        }
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(boardMoves);
+                .body(finalPlay);
     }
 
     public String checkWinner(List<String> board) {
@@ -107,13 +109,13 @@ public class ticTacController {
     }
 
     static Boolean isMovesLeft(char board[][])
-{
-    for (int i = 0; i < 3; i++)
-        for (int j = 0; j < 3; j++)
-            if (board[i][j] == '_')
-                return true;
-    return false;
-}
+    {
+        for (int i = 0; i < 3; i++)
+            for (int j = 0; j < 3; j++)
+                if (board[i][j] == '_')
+                    return true;
+        return false;
+    }
  
     static int evaluate(char b[][])
     {
@@ -164,19 +166,12 @@ public class ticTacController {
                        int depth, Boolean isMax)
     {
         int score = evaluate(board);
- 
-    // If Maximizer has won the game
-    // return his/her evaluated score
+
     if (score == 10)
         return score;
- 
-    // If Minimizer has won the game
-    // return his/her evaluated score
     if (score == -10)
         return score;
- 
-    // If there are no more moves and
-    // no winner then it is a tie
+
     if (isMovesLeft(board) == false)
         return 0;
         if (isMax)
@@ -242,15 +237,8 @@ public class ticTacController {
                 }
             }
         }
-
-        System.out.printf("The value of the best Move " +
-                "is : %d\n\n", bestVal);
-
         return bestMove;
     }
 
 }
-
-
-
  
